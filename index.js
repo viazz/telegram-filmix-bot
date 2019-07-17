@@ -14,7 +14,7 @@ const TelegramBot = require('node-telegram-bot-api'),
 
 const port = process.env.PORT || 3000
 expressApp.get('/', (req, res) => {
-    res.send('Hello World!')
+    res.send('Working!!!')
 })
 expressApp.listen(port, () => {
     console.log(`Listening on port ${port}`)
@@ -140,12 +140,11 @@ bot.on("callback_query", function(data){
     )
 });//del item
 
-setInterval(() => list(client), 30 * 60 * 1000);//update for new item
+setInterval(() => list(client), 20 * 60 * 1000);//update for new item
 
 async function list(cl) {
     var list = [];
     const gsapi = google.sheets({version: 'v4', auth: cl});
-    var lastrow = 1;
     for (var i = 1; i<40; i++){
         var readCell = await gsapi.spreadsheets.values.get({
             spreadsheetId: wsId,
@@ -153,31 +152,28 @@ async function list(cl) {
         });
         var valueCell = readCell.data.values;
         if (typeof valueCell === 'undefined'){
-            lastrow = i;
+            var last_row = i;
             break
         };//find last row
         list.push(valueCell);
     };
     console.log(list);
+    console.log(last_row);
 
     compare_list (client);
     async function compare_list (cl){
         var compare_list = [];
         const gsapi = google.sheets({version: 'v4', auth: cl});
-        var lastrow = 1;
-        for (var i = 1; i<40; i++){
+        for (var i = 1; i<last_row; i++){
             var readCell = await gsapi.spreadsheets.values.get({
                 spreadsheetId: wsId,
                 range: `list!B${i}`,//Bi
             });
             var valueCell = readCell.data.values;
-            if (typeof valueCell === 'undefined'){
-                lastrow = i;
-                break
-            };//find last row
             compare_list.push(valueCell);
         };
-        console.log(compare_list)
+        console.log("compare list: " + compare_list);
+        console.log("first item compare list: " + compare_list[1])
 
         serials()
         function serials() {
@@ -197,8 +193,10 @@ async function list(cl) {
                     if (title.match(list_item) != null){
                         var text = xpath.select(`string(//*[@id="dle-content"]/article[${i}]/div[2]/div[3]/span[2])`, doc),
                             link = xpath.select(`string(//*[@id="dle-content"]/article[${i}]/div[1]/span/a/@href)`, doc),
-                            name = xpath.select(`string(//*[@id="dle-content"]/article[${i}]/div[2]/div[2]/h2/a)`, doc);
-                        if (compare_list[n] != text){
+                            name = xpath.select(`string(//*[@id="dle-content"]/article[${i}]/div[2]/div[2]/h2/a)`, doc),
+                            compare_item = compare_list[n];
+                        (compare_item === undefined) ? compare_item = "1" : compare_item;
+                        if (compare_item.toString() !== text.toString()){
                             bot.sendPhoto(id, link, { caption: name + "\n" + text } );
                             add(client, n+1, text);
                         }
@@ -226,8 +224,10 @@ async function list(cl) {
                         if (title.match(list_item) != null){
                             var text = xpath.select(`string(//*[@id="dle-content"]/article[${i}]/div[2]/div[1]/div[1])`, doc),
                                 link = xpath.select(`string(//*[@id="dle-content"]/article[${i}]/div[1]/span/a/@href)`, doc),
-                                name = xpath.select(`string(//*[@id="dle-content"]/article[${i}]/div[2]/div[2]/h2/a)`, doc);
-                            if (compare_list[n] != text){
+                                name = xpath.select(`string(//*[@id="dle-content"]/article[${i}]/div[2]/div[2]/h2/a)`, doc),
+                                compare_item = compare_list[n];
+                            (compare_item === undefined) ? compare_item = "1" : compare_item;
+                            if (compare_item.toString() !== text.toString()){
                                 bot.sendPhoto(id, link, { caption: name + "\n" + text } );
                                 add(client, n+1, text);
                             }
@@ -255,8 +255,10 @@ async function list(cl) {
                         if (title.match(list_item) != null){
                             var text = xpath.select(`string(//*[@id="dle-content"]/article[${i}]/div[2]/div[1]/div[1])`, doc),
                                 link = xpath.select(`string(//*[@id="dle-content"]/article[${i}]/div[1]/span/a/@href)`, doc),
-                                name = xpath.select(`string(//*[@id="dle-content"]/article[${i}]/div[2]/div[2]/h2/a)`, doc);
-                            if (compare_list[n] != text){
+                                name = xpath.select(`string(//*[@id="dle-content"]/article[${i}]/div[2]/div[2]/h2/a)`, doc),
+                                compare_item = compare_list[n];
+                            (compare_item === undefined) ? compare_item = "1" : compare_item;
+                            if (compare_item.toString() !== text.toString()){
                                 bot.sendPhoto(id, link, { caption: name + "\n" + text } );
                                 add(client, n+1, text);
                             }
@@ -277,4 +279,34 @@ async function add(cl, n, text) {
         resource: {
             values: [[text]] }
     })
+}
+
+async function addNew(cl, message, mid) {
+    const gsapi = google.sheets({version: 'v4', auth: cl});
+    var lastrow = 1;
+
+    for (var i = 1; i<30; i++){
+        var readCellA = await gsapi.spreadsheets.values.get({
+            spreadsheetId: wsId,
+            range: `list!A${i}`,//Ai
+        });
+        var valueA = readCellA.data.values;
+        if (typeof valueA === 'undefined'){
+            lastrow = i;
+            break
+        };
+    };
+
+    await gsapi.spreadsheets.values.update({
+        spreadsheetId: wsId,
+        range: `list!A${lastrow}`,//A lastrow
+        valueInputOption: 'RAW',
+        resource: {
+            values: [[message]] }
+    });
+    bot.sendMessage(id, message + " - добавлено")
+    setTimeout(
+        () => bot.deleteMessage(id,mid + 1) & bot.deleteMessage(id,mid),
+        2 * 1000,
+    )
 }
