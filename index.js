@@ -43,7 +43,7 @@ client.authorize(function (err, token) {
 
 bot.on('message', msg => {
     var text = msg.text;
-    var mid = msg.message..message.id;
+    var mid = msg.message.message.id;
     if (text !== "/delete") {
         console.log("new message - " + text);
         addNew(client, text, mid)
