@@ -42,10 +42,11 @@ client.authorize(function (err, token) {
 });
 
 bot.on('message', msg => {
-    var text = msg.text;
+    var text = msg.text,
+        mid = msg.message.id;
     if (text !== "/delete") {
         console.log("new message - " + text);
-        addNew(client, text)
+        addNew(client, text, mid)
     }
 });//add to list
 
@@ -285,7 +286,7 @@ async function addNew(cl, message, mid) {
     const gsapi = google.sheets({version: 'v4', auth: cl});
     var lastrow = 1;
 
-    for (var i = 1; i<30; i++){
+    for (var i = 1; i<40; i++){
         var readCellA = await gsapi.spreadsheets.values.get({
             spreadsheetId: wsId,
             range: `list!A${i}`,//Ai
