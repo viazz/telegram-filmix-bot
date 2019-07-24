@@ -308,6 +308,6 @@ async function addNew(cl, message, mid) {
     bot.sendMessage(id, message + " - добавлено")
     setTimeout(
         () => bot.deleteMessage(id,mid + 1) & bot.deleteMessage(id,mid),
-        2 * 1000,
+        5 * 1000,
     )
 }
