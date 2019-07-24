@@ -42,10 +42,11 @@ client.authorize(function (err, token) {
 });
 
 bot.on('message', msg => {
-    var text = msg.text;
+    var text = msg.text,
+        mid = msg.message_id;
     if (text !== "/delete") {
         console.log("new message - " + text);
-        addNew(client, text)
+        addNew(client, text, mid)
     }
 });//add to list
 
