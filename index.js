@@ -9,6 +9,7 @@ const xpath = require('xpath'),
     request = require('request'),
     express = require('express'),
     expressApp = express();
+const snoowrap = require('snoowrap');
 const TelegramBot = require('node-telegram-bot-api'),
     token = "617476169:AAGvOg3PTjtP2-OqyHS78rGZKCzXOalNl5c";//test-bot
 
@@ -475,3 +476,66 @@ function send_form(artist, title, art, song_id) {
         bot_m.sendPhoto(chat_id,art,options)
     }
 }
+
+
+
+const r = new snoowrap({
+    userAgent: 'reddit-bot-example-node',
+    clientId: 'C15nUxzTc8pm1A',
+    clientSecret: '-A8V9HwWVaHXTN9owxuEbQmAV3s',
+    username: 'viazzz',
+    password: 'cbvjytwm990'
+});
+
+const token_r = "720901180:AAHdPgHDWI74jyCIBzr3QJs5J8l7Ny4qpoc",
+    bot_r = new TelegramBot(token_r,{polling: true});
+
+bot_r.onText(/\/update/, msg => {
+    f(client);
+    setTimeout( () =>
+        bot_r.deleteMessage(chat_id, msg.message_id),
+        1 * 1000,
+    )
+});
+
+setTimeout( () =>
+    f(client),
+    60 * 1000,
+)
+
+async function f(cl) {
+        const gsapi = google.sheets({version: 'v4', auth: cl});
+        var cell = await gsapi.spreadsheets.values.get({
+            spreadsheetId: wsId,
+            range: `list!C1`,
+        });
+        var last_id = cell.data.values.toString();
+
+        r.getMe().getUpvotedContent()
+            .then(async post => {
+                await gsapi.spreadsheets.values.update({
+                    spreadsheetId: wsId,
+                    range: `list!C1`,
+                    valueInputOption: 'RAW',
+                    resource: {values: [[post[0].id.toString()]]}
+                });
+                for (i=0;i<10;i++) {
+                    var title = post[i].title,
+                        link = post[i].url,
+                        domain = post[i].domain,
+                        post_id = post[i].id.toString();
+                    if (post_id === last_id){console.log(post_id+" - "+last_id); break}
+                    if (domain === "gfycat.com") {
+                        request(link, function (error, response, body) {
+                            var doc = new dom().parseFromString(body);
+                            var video_link = xpath.select(`string(//*[@id="video-breakableacademicerin"]/source[3]/@src)`, doc);
+                            bot_r.sendVideo(chat_id, video_link, {caption: title});
+                        })
+                    } else if (domain === "v.redd.it") {
+                        bot_r.sendMessage(chat_id,link)
+                    } else {
+                        bot_r.sendPhoto(chat_id,link,{caption: title})
+                    }
+                }
+            })
+    }
