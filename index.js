@@ -207,6 +207,37 @@ async function list(cl) {
             }
         })
         }
+        
+        multserialy()
+        function multserialy() {
+        var url = {
+                url: 'http://filmix.cc/multserialy',
+                encoding: null
+            };
+        request(url, function (error, response, body) {
+            body = iconv.decode(Buffer.from(body), 'win1251');
+            var doc = new dom().parseFromString(body);
+            for (i=1; i<15; i++){
+                var title = xpath.select(`string(//*[@id="dle-content"]/article[${i}]/div[2]/div[2]/h2/a)`, doc);
+                for (n=0; n<list.length; n++){
+                    var title = title.toLowerCase();
+                    var list_item = list[n].toString();
+                    list_item = list_item.toLowerCase();
+                    if (title.match(list_item) != null){
+                        var text = xpath.select(`string(//*[@id="dle-content"]/article[${i}]/div[2]/div[3]/span[2])`, doc),
+                            link = xpath.select(`string(//*[@id="dle-content"]/article[${i}]/div[1]/span/a/@href)`, doc),
+                            name = xpath.select(`string(//*[@id="dle-content"]/article[${i}]/div[2]/div[2]/h2/a)`, doc),
+                            compare_item = compare_list[n];
+                        (compare_item === undefined) ? compare_item = "1" : compare_item;
+                        if (compare_item.toString() !== text.toString()){
+                            bot.sendPhoto(id, link, { caption: name + "\n" + text } );
+                            add(client, n+1, text);
+                        }
+                    }
+                }
+            }
+        })
+        }
 
         films()
         function films() {
