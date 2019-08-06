@@ -550,7 +550,7 @@ async function f(cl) {
                     valueInputOption: 'RAW',
                     resource: {values: [[post[0].id.toString()]]}
                 });
-                for (i=0;i<10;i++) {
+                for (i=0;i<100;i++) {
                     var title = post[i].title,
                         link = post[i].url,
                         domain = post[i].domain,
