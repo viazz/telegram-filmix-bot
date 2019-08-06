@@ -531,7 +531,7 @@ bot_r.onText(/\/update/, msg => {
 
 setInterval( () =>
     f(client),
-    60 * 1000,
+    20 * 1000,
 )
 
 async function f(cl) {
