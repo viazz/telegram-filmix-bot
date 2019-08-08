@@ -559,7 +559,7 @@ async function f(cl) {
                     if (domain === "gfycat.com") {
                         request(link, function (error, response, body) {
                             var doc = new dom().parseFromString(body),
-                                video_link = xpath.select(`string(//*[@id="video-breakableacademicerin"]/source[3]/@src)`, doc);
+                                video_link = xpath.select(`string(//*[@class="video media"]/source[3]/@src)`, doc);
                             bot_r.sendVideo(chat_id, video_link, {caption: title})                        
                         })                        
                     } else if (domain === "v.redd.it") {
