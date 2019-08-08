@@ -557,14 +557,10 @@ async function f(cl) {
                         post_id = post[i].id.toString();
                     if (post_id === last_id){console.log(post_id+" - "+last_id); break}
                     if (domain === "gfycat.com") {
-                        if (post[i].preview !== undefined) {
-                            var video_link = post[i].preview.reddit_video_preview.fallback_url
-                        } else {
-                            request(link, function (error, response, body) {
-                                var doc = new dom().parseFromString(body);
-                                video_link = xpath.select(`string(//*[@id="video-breakableacademicerin"]/source[3]/@src)`, doc);
-                            })
-                        }
+                        request(link, function (error, response, body) {
+                            var doc = new dom().parseFromString(body);
+                            video_link = xpath.select(`string(//*[@id="video-breakableacademicerin"]/source[3]/@src)`, doc);
+                        })
                         bot_r.sendVideo(chat_id, video_link, {caption: title})
                     } else if (domain === "v.redd.it") {
                         bot_r.sendMessage(chat_id,link)
