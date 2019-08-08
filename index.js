@@ -560,8 +560,8 @@ async function f(cl) {
                         request(link, function (error, response, body) {
                             var doc = new dom().parseFromString(body),
                                 video_link = xpath.select(`string(//*[@id="video-breakableacademicerin"]/source[3]/@src)`, doc);
-                        })
-                        bot_r.sendVideo(chat_id, video_link, {caption: title})
+                            bot_r.sendVideo(chat_id, video_link, {caption: title})                        
+                        })                        
                     } else if (domain === "v.redd.it") {
                         bot_r.sendMessage(chat_id,link)
                     } else {
